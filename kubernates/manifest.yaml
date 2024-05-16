@@ -1,0 +1,104 @@
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: moment-capturer
+  labels: # these labels are deployment labels
+    app: web
+    project: moment-capturer
+    tier: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+      project: moment-capturer
+      tier: web
+  template:
+    metadata:
+      labels:
+        app: web
+        project: moment-capturer
+        tier: web
+    spec:
+      containers:
+      - name: web
+        image: suryashankar598/my-react-app:latest
+        imagePullPolicy: Always
+        # resources:
+        #   requests:
+        #     cpu: "50m"
+        #     memory: "64Mi"
+        #   limits:
+        #     cpu: "100m"
+        #     memory: "128Mi"
+        ports:
+        - containerPort: 80
+        # envFrom:
+        # - configMapRef:
+        #     name: mysql
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: moment-capturer
+spec:
+  selector:
+    app: web
+    project: moment-capturer
+    tier: web
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer  # Change to LoadBalancer if using a cloud provider that supports it
+---
+# apiVersion: autoscaling/v2
+# kind: HorizontalPodAutoscaler
+# metadata:
+#   name: web
+#   namespace: moment-capturer
+# spec:
+#   scaleTargetRef:
+#     apiVersion: apps/v1
+#     kind: Deployment
+#     name: web
+#   minReplicas: 1
+#   maxReplicas: 10
+#   metrics:
+#   - type: Resource
+#     resource:
+#       name: cpu
+#       target:
+#         type: Utilization
+#         averageUtilization: 5
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: web
+#   namespace: moment-capturer
+#   annotations:
+#     alb.ingress.kubernetes.io/scheme: internet-facing
+#     alb.ingress.kubernetes.io/target-type: ip
+#     alb.ingress.kubernetes.io/tags: Environment=dev,Team=test,Project moment-capturer
+#     alb.ingress.kubernetes.io/group.name: moment-capturer
+# spec:
+#   ingressClassName: alb
+#   rules:
+#   - host:  moment-capturer.daws76s.online"
+#     http:
+#       paths:
+#       - pathType: Prefix
+#         path: "/"
+#         backend:
+#           service:
+#             name: web
+#             port:
+#               number: 80
